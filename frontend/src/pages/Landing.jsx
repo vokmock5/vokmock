@@ -6,19 +6,15 @@ export default function Landing() {
   return (
     <div className="h-screen flex flex-col justify-center items-center bg-gradient-to-br from-slate-900 to-gray-800 text-white px-6">
       
-      {/* Title */}
       <h1 className="text-4xl md:text-5xl font-bold mb-4 text-center">
         AI-Powered Virtual Interview
       </h1>
 
-      {/* Subtitle */}
       <p className="text-lg md:text-xl text-gray-300 max-w-2xl text-center mb-8">
         Experience a personalized interview where the AI understands your
-        profile, analyzes your resume, and asks questions tailored to your
-        skills and domain — all inside an immersive VR environment.
+        resume, analyzes your answers, and responds like a real interviewer.
       </p>
 
-      {/* CTA Button */}
       <button
         onClick={() => navigate("/onboarding")}
         className="bg-pink-600 hover:bg-pink-700 transition px-8 py-4 rounded-full text-lg font-semibold shadow-lg"
