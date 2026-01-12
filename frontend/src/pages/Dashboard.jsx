@@ -57,7 +57,14 @@ const Dashboard = () => {
         });
 
         const data = await res.json();
-        setInterviews(data);
+
+if (res.ok && Array.isArray(data.interviews)) {
+  setInterviews(data.interviews);
+} else {
+  console.error("Invalid interviews response:", data);
+  setInterviews([]); // 💥 CRASH PREVENTION
+}
+
       } catch (err) {
         console.error("Failed to fetch interviews", err);
       } finally {
@@ -109,7 +116,7 @@ const Dashboard = () => {
           <div className="bg-white/4 border border-white/8 rounded-3xl p-7 backdrop-blur-[12px]">
             <p className="text-sm text-slate-500">Total Interviews</p>
             <h3 className="text-3xl font-bold mt-2">
-              {interviews.length}
+              {interviews?.length||0}
             </h3>
           </div>
 {/* 
@@ -144,7 +151,7 @@ const Dashboard = () => {
           Interview History
         </h3>
 
-        {interviews.length === 0 ? (
+        {interviews?.length === 0 ? (
           <div className="bg-white p-10 rounded-xl border text-center">
             <p className="text-slate-500 mb-4">
               You haven’t taken any interviews yet.
@@ -158,7 +165,7 @@ const Dashboard = () => {
           </div>
         ) : (
           <div className="space-y-6">
-            {interviews.map((interview) => (
+            {Array.isArray(interviews) && interviews?.map((interview) => (
               <div
                 key={interview._id}
                 // className="bg-white rounded-xl p-6 border"

@@ -137,6 +137,50 @@ IMPORTANT:
   }
 }
 
+export async function submitAnswer(answer) {
+  // send answer to backend / GPT
+  console.log("Answer sent:", answer);
+  
+  // Store answer in session if there's a pending question
+  if (interviewSession.qa.length > 0) {
+    const lastIndex = interviewSession.qa.length - 1;
+    if (interviewSession.qa[lastIndex].answer === null) {
+      interviewSession.qa[lastIndex].answer = answer;
+    }
+  }
+}
+
+export async function processUserAnswer(answer) {
+  // Process user answer and get next interview step
+  console.log("Processing answer:", answer);
+  
+  // Store answer in session
+  await submitAnswer(answer);
+  
+  // Get candidate profile
+  const candidateProfile = JSON.parse(localStorage.getItem("candidateProfile") || "{}");
+  
+  // Get interview state from session
+  const interviewState = {
+    round: interviewSession.qa.length,
+    previousQuestions: interviewSession.qa.map(q => q.question),
+    previousAnswers: interviewSession.qa.map(q => q.answer).filter(a => a !== null)
+  };
+  
+  // Get next interview step
+  const input = {
+    candidate: candidateProfile,
+    interviewState,
+    currentAnswer: answer
+  };
+  
+  const aiResponse = await getNextInterviewStep(input);
+  
+  return {
+    nextQuestion: aiResponse.question
+  };
+}
+
 export async function generateInterviewFeedback() {
   const prompt = `
 You are a professional human interviewer conducting a MOCK INTERVIEW.

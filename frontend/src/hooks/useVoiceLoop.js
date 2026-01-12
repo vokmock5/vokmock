@@ -1,12 +1,18 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { getNextInterviewStep } from "../ai/interviewEngine";
 import { useTextToSpeech } from "./useTextToSpeech";
 import { useSpeechToText } from "./useSpeechToText";
 
-export function useVoiceLoop(setDisplayText, setListening) {
+export default function useVoiceLoop(setDisplayText, setListening) {
   const { speak } = useTextToSpeech();
 
-  const { startListening } = useSpeechToText(onUserAnswer);
+  // eslint-disable-next-line no-unused-vars
+  const { startListening: startListeningSTT } = useSpeechToText(onUserAnswer);
+
+  // Simple speech recognition interface
+  const recognitionRef = useRef(null);
+  const [listening, setListeningState] = useState(false);
+  const [transcript, setTranscript] = useState("");
 
   const [interviewState, setInterviewState] = useState({
     round: 1,
@@ -31,6 +37,44 @@ export function useVoiceLoop(setDisplayText, setListening) {
     setCandidateProfile(parsed);
   }, []);
 
+  // Simple speech recognition initialization
+  const initRecognition = () => {
+    const SpeechRecognition =
+      window.SpeechRecognition || window.webkitSpeechRecognition;
+
+    if (!SpeechRecognition) {
+      alert("Speech Recognition not supported");
+      return;
+    }
+
+    recognitionRef.current = new SpeechRecognition();
+    recognitionRef.current.lang = "en-US";
+    recognitionRef.current.continuous = false;
+
+    recognitionRef.current.onresult = (e) => {
+      const text = e.results[0][0].transcript;
+      setTranscript(text);
+      setListeningState(false);
+    };
+
+    recognitionRef.current.onend = () => {
+      setListeningState(false);
+    };
+  };
+
+  // Simple speech recognition controls
+  const startListening = () => {
+    if (!recognitionRef.current) initRecognition();
+    setTranscript("");
+    setListeningState(true);
+    recognitionRef.current.start();
+  };
+
+  const stopListening = () => {
+    recognitionRef.current?.stop();
+    setListeningState(false);
+  };
+
   function onUserAnswer(answer) {
     handleAnswer(answer);
   }
@@ -44,9 +88,8 @@ export function useVoiceLoop(setDisplayText, setListening) {
     if (setListening) setListening(false);
     speak(intro);
 
-    // ✅ MUST be called directly from button click
-    if (setListening) setListening(true);
-    startListening();
+    // ✅ Manual control - user must click to start listening
+    // Removed automatic startListening() call
   };
 
   const handleAnswer = async (answer) => {
@@ -91,12 +134,15 @@ export function useVoiceLoop(setDisplayText, setListening) {
     if (setListening) setListening(false);
     speak(aiResponse.question);
 
-    // ✅ SAFE after first user permission
-    setTimeout(() => {
-      if (setListening) setListening(true);
-      startListening();
-    }, 500);
+    // ✅ AUTO LISTENING REMOVED - user must manually start listening
+    // Removed: setTimeout(() => { startListening(); }, 500);
   };
 
-  return { startInterview };
+  return {
+    transcript,
+    listening,
+    startListening,
+    stopListening,
+    startInterview,
+  };
 }
