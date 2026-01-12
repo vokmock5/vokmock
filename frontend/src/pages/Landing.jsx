@@ -1,6 +1,7 @@
 import React, { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ArrowRight, Mic, Video, Brain } from 'lucide-react';
+import vrInterview from "../assets/vrInterview.jpeg";
 
 const LandingPage = () => {
   // Load Google Fonts
@@ -153,7 +154,7 @@ const handleSignup = () => {
             >
               <div className="relative rounded-2xl overflow-hidden shadow-2xl">
                 <img
-                  src="https://images.pexels.com/photos/7205310/pexels-photo-7205310.jpeg"
+                  src={vrInterview}
                   alt="VR Interview Preview"
                   className="w-full h-auto object-cover"
                   style={{ aspectRatio: '4/3' }}

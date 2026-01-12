@@ -24,7 +24,10 @@ export default function VoiceUI() {
       
       {/* Give Feedback */}
       <button
-        onClick={() => navigate("/feedback")}
+       onClick={async () => {
+    const interviewId = await startInterview();
+    navigate(`/feedback/${interviewId}`);
+  }}
         className="bg-indigo-600 px-6 py-3 rounded-xl font-semibold hover:bg-indigo-700 transition"
       >
         Give Feedback

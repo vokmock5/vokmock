@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import { useParams } from "react-router-dom";
 
 import {
   interviewSession,
@@ -10,6 +11,8 @@ import {
 
 function Feedback() {
   const navigate = useNavigate();
+  const { id } = useParams();
+console.log("Opened interview id:", id);
 
   console.log("✅ FEEDBACK PAGE RENDERED"); // 👈 YAHAN ADD KARO
   useEffect(() => {
@@ -65,7 +68,7 @@ function Feedback() {
       {/* Right Side Action */}
 <div className="flex items-center justify-center">
   <button
-    onClick={() => navigate("/")}
+    onClick={() => navigate("/dashboard")}
     className="
       px-10 py-4 rounded-full
       text-base font-medium
@@ -95,6 +98,26 @@ function Feedback() {
             try {
               const feedback = await generateInterviewFeedback();
               setAiFeedback(feedback);
+
+              const token = localStorage.getItem("token");
+
+await fetch("http://localhost:5000/api/interviews", {
+  method: "POST",
+  headers: {
+    "Content-Type": "application/json",
+    Authorization: `Bearer ${token}`
+  },
+  body: JSON.stringify({
+    interviewTitle: "Mock Interview",
+    qa: interviewSession.qa,
+    feedback: {
+      ...feedback,
+      overallPerformance: "Needs Improvement",
+      confidenceLevel: "Medium",
+      score: 6
+    }
+  })
+});
             } catch (e) {
               alert("Failed to generate AI feedback");
             }
