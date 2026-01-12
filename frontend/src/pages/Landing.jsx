@@ -1,7 +1,6 @@
 import React, { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ArrowRight, Mic, Video, Brain } from 'lucide-react';
-import vrImage from '../assets/vrInterview.jpeg';
 
 const LandingPage = () => {
   // Load Google Fonts
@@ -11,7 +10,7 @@ const LandingPage = () => {
     link1.rel = 'stylesheet';
     document.head.appendChild(link1);
 
-    const link2 = document.createElement('link'); 
+    const link2 = document.createElement('link');
     link2.href = 'https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700&display=swap';
     link2.rel = 'stylesheet';
     document.head.appendChild(link2);
@@ -27,6 +26,13 @@ const LandingPage = () => {
   const handleStart = () => {
     navigate("/onboarding");
   };
+const handleLogin = () => {
+  navigate("/login");
+};
+
+const handleSignup = () => {
+  navigate("/signup");
+};
 
   // Animation for scroll
   const [scrollY, setScrollY] = React.useState(0);
@@ -39,6 +45,39 @@ const LandingPage = () => {
 
   return (
     <div className="min-h-screen bg-slate-50 overflow-hidden">
+      {/* Top Navigation */}
+<div className="absolute top-0 left-0 w-full z-20">
+  <div className="container mx-auto px-6 lg:px-12 py-6 flex justify-between items-center">
+    
+    {/* Logo / Brand */}
+    <h1
+      className="text-xl font-bold text-slate-900"
+      style={{ fontFamily: "Outfit, sans-serif" }}
+    >
+      VokMock
+    </h1>
+
+    {/* Auth Buttons */}
+    <div className="flex items-center gap-4">
+      <button
+        onClick={handleLogin}
+        className="px-6 py-2 rounded-full border border-slate-300 text-slate-700 hover:bg-slate-100 transition-all"
+        style={{ fontFamily: "Manrope, sans-serif" }}
+      >
+        Login
+      </button>
+
+      <button
+        onClick={handleSignup}
+        className="px-6 py-2 rounded-full bg-gradient-to-r from-pink-600 to-orange-500 text-white hover:from-pink-700 hover:to-orange-600 transition-all shadow-md"
+        style={{ fontFamily: "Manrope, sans-serif" }}
+      >
+        Sign Up
+      </button>
+    </div>
+  </div>
+</div>
+
       {/* Hero Section */}
       <div className="relative min-h-screen flex items-center">
         {/* Background texture */}
@@ -113,13 +152,12 @@ const LandingPage = () => {
               }}
             >
               <div className="relative rounded-2xl overflow-hidden shadow-2xl">
-               <img
-                    src={vrImage}
-                    alt="VR Interview Preview"
-                    className="w-full h-auto object-cover"
-                    style={{ aspectRatio: '4/3' }}
-              />
-
+                <img
+                  src="https://images.pexels.com/photos/7205310/pexels-photo-7205310.jpeg"
+                  alt="VR Interview Preview"
+                  className="w-full h-auto object-cover"
+                  style={{ aspectRatio: '4/3' }}
+                />
                 <div className="absolute inset-0 bg-gradient-to-t from-indigo-600/30 to-transparent" />
               </div>
               
