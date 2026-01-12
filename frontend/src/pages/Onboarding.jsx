@@ -1,6 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Upload, FileText, CheckCircle, Briefcase, ArrowRight, Sparkles } from 'lucide-react';
+import * as pdfjsLib from "pdfjs-dist/legacy/build/pdf";
+import { parseResumeWithGPT } from "../ai/resumeParser";
+
+// use the worker from public/
+pdfjsLib.GlobalWorkerOptions.workerSrc = '/pdf.worker.min.mjs';
 
 export default function Onboarding() {
   const [resume, setResume] = useState(null);
@@ -74,33 +79,66 @@ export default function Onboarding() {
   };
   const navigate = useNavigate();
 
-const handleSubmit = async () => {
-  if (!resume) {
-    alert("Please upload your resume");
-    return;
-  }
+  const extractTextFromPDF = async (file) => {
+    const arrayBuffer = await file.arrayBuffer();
+    const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
 
-  setLoading(true);
+    let text = "";
 
-  setTimeout(() => {
-    const profile = {
-      name: resume.name,
-      domain,
-      size: resume.size,
-      uploadedAt: Date.now()
-    };
+    for (let i = 1; i <= pdf.numPages; i++) {
+      const page = await pdf.getPage(i);
+      const content = await page.getTextContent();
+      text += content.items.map(item => item.str).join(" ") + "\n";
+    }
 
-    localStorage.setItem(
-      "candidateProfile",
-      JSON.stringify(profile)
-    );
+    return text;
+  };
 
-    setLoading(false);
+  const handleSubmit = async () => {
+    if (!resume) {
+      alert("Please upload your resume");
+      return;
+    }
 
-    // ✅ Navigate to React interview page (NOT VR directly)
-    navigate("/interview");
-  }, 1500);
-};
+    setLoading(true);
+
+    try {
+      // 1️⃣ Extract resume text
+      const resumeText = await extractTextFromPDF(resume);
+
+      // 2️⃣ Parse with GPT
+      const parsedProfile = await parseResumeWithGPT(
+        resumeText,
+        domain
+      );
+
+      // 3️⃣ Build FINAL candidate profile
+      const candidateProfile = {
+        name: parsedProfile.name || resume.name,
+        domain,
+        experienceLevel: parsedProfile.experienceLevel,
+        skills: parsedProfile.skills || [],
+        projects: parsedProfile.projects || [],
+        uploadedAt: Date.now()
+      };
+
+      console.log("🟢 Final candidateProfile:", candidateProfile);
+
+      // 4️⃣ Save for interview + VR
+      localStorage.setItem(
+        "candidateProfile",
+        JSON.stringify(candidateProfile)
+      );
+
+      setLoading(false);
+      navigate("/interview");
+
+    } catch (err) {
+      console.error("❌ Resume parsing failed:", err);
+      setLoading(false);
+      alert("Resume parsing failed. Please try again.");
+    }
+  };
 
 
   const domains = [

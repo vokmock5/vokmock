@@ -1,9 +1,9 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { getNextInterviewStep } from "../ai/interviewEngine";
 import { useTextToSpeech } from "./useTextToSpeech";
 import { useSpeechToText } from "./useSpeechToText";
 
-export function useVoiceLoop(setDisplayText) {
+export function useVoiceLoop(setDisplayText, setListening) {
   const { speak } = useTextToSpeech();
 
   const { startListening } = useSpeechToText(onUserAnswer);
@@ -13,6 +13,23 @@ export function useVoiceLoop(setDisplayText) {
     previousQuestions: [],
     previousAnswers: []
   });
+
+  const [candidateProfile, setCandidateProfile] = useState(null);
+
+  useEffect(() => {
+    const storedProfile = localStorage.getItem("candidateProfile");
+
+    if (!storedProfile) {
+      console.error("❌ candidateProfile not found in localStorage");
+      return;
+    }
+
+    const parsed = JSON.parse(storedProfile);
+
+    console.log("🟢 Loaded candidateProfile:", parsed);
+
+    setCandidateProfile(parsed);
+  }, []);
 
   function onUserAnswer(answer) {
     handleAnswer(answer);
@@ -24,21 +41,39 @@ export function useVoiceLoop(setDisplayText) {
     const intro = "Welcome to your interview. Please introduce yourself.";
     setDisplayText(intro);
 
+    if (setListening) setListening(false);
     speak(intro);
 
     // ✅ MUST be called directly from button click
+    if (setListening) setListening(true);
     startListening();
   };
 
   const handleAnswer = async (answer) => {
     console.log("🗣️ User:", answer);
 
-    const candidateProfile = JSON.parse(
-      localStorage.getItem("candidateProfile")
-    );
+    let profile = candidateProfile;
+
+    if (!profile) {
+      const stored = localStorage.getItem("candidateProfile");
+      if (stored) {
+        profile = JSON.parse(stored);
+        setCandidateProfile(profile);
+        console.log("🟢 Loaded candidateProfile from fallback:", profile);
+      }
+    }
+
+    if (
+      !candidateProfile ||
+      !candidateProfile.skills ||
+      !candidateProfile.projects
+    ) {
+      console.error("❌ Resume profile missing or incomplete");
+      return;
+    }
 
     const input = {
-      candidate: candidateProfile,
+      candidate: profile,
       interviewState,
       currentAnswer: answer
     };
@@ -53,10 +88,12 @@ export function useVoiceLoop(setDisplayText) {
 
     setDisplayText(aiResponse.question);
 
+    if (setListening) setListening(false);
     speak(aiResponse.question);
 
     // ✅ SAFE after first user permission
     setTimeout(() => {
+      if (setListening) setListening(true);
       startListening();
     }, 500);
   };
