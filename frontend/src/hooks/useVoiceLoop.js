@@ -6,9 +6,7 @@ import { useSpeechToText } from "./useSpeechToText";
 export function useVoiceLoop(setDisplayText) {
   const { speak } = useTextToSpeech();
 
-  const { startListening } = useSpeechToText((spokenText) => {
-    onUserAnswer(spokenText);
-  });
+  const { startListening } = useSpeechToText(onUserAnswer);
 
   const [interviewState, setInterviewState] = useState({
     round: 1,
@@ -16,19 +14,24 @@ export function useVoiceLoop(setDisplayText) {
     previousAnswers: []
   });
 
-  const startInterview = async () => {
-    console.log("🟢 NEW INTERVIEW STARTED");
+  function onUserAnswer(answer) {
+    handleAnswer(answer);
+  }
+
+  const startInterview = () => {
+    console.log("🟢 Interview started");
 
     const intro = "Welcome to your interview. Please introduce yourself.";
     setDisplayText(intro);
 
-    speak(intro, () => {
-      startListening(); // 🎤 auto mic after TTS
-    });
+    speak(intro);
+
+    // ✅ MUST be called directly from button click
+    startListening();
   };
 
-  const onUserAnswer = async (answer) => {
-    console.log("🗣️ User Answer:", answer);
+  const handleAnswer = async (answer) => {
+    console.log("🗣️ User:", answer);
 
     const candidateProfile = JSON.parse(
       localStorage.getItem("candidateProfile")
@@ -50,9 +53,12 @@ export function useVoiceLoop(setDisplayText) {
 
     setDisplayText(aiResponse.question);
 
-    speak(aiResponse.question, () => {
-      startListening(); // 🎤 auto listen again
-    });
+    speak(aiResponse.question);
+
+    // ✅ SAFE after first user permission
+    setTimeout(() => {
+      startListening();
+    }, 500);
   };
 
   return { startInterview };
