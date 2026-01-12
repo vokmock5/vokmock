@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>VR Interview Room</title>
+
+  <!-- ✅ ALWAYS USE RELATIVE PATHS -->
+  <link rel="stylesheet" href="./css/style.css" />
+</head>
+
+<body>
+  <div id="info">
+    <h3>VR Interview Room</h3>
+  </div>
+
+  <div id="loading">
+    <div class="spinner"></div>
+    <p>Loading Interview Room...</p>
+  </div>
+
+  <!-- ✅ Three.js -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+
+  <!-- ✅ VR SCRIPTS (ORDER MATTERS) -->
+  <script src="./js/scene.js"></script>
+  <script src="./js/objects.js"></script>
+  <script src="./js/controls.js"></script>
+  <script src="./js/main.js"></script>
+</body>
+</html>

@@ -72,33 +72,36 @@ export default function Onboarding() {
       });
     }, 100);
   };
-
   const navigate = useNavigate();
 
-  const handleSubmit = async () => {
-    if (!resume) {
-      alert("Please upload your resume");
-      return;
-    }
+const handleSubmit = async () => {
+  if (!resume) {
+    alert("Please upload your resume");
+    return;
+  }
 
-    setLoading(true);
+  setLoading(true);
 
-    // Simulate processing: extract text, parse, save profile, then navigate
-    setTimeout(() => {
-      const profile = {
-        name: resume.name,
-        domain,
-        size: resume.size,
-        uploadedAt: Date.now()
-      };
+  setTimeout(() => {
+    const profile = {
+      name: resume.name,
+      domain,
+      size: resume.size,
+      uploadedAt: Date.now()
+    };
 
-      // Persist the candidate profile for the interview page to consume
-      localStorage.setItem("candidateProfile", JSON.stringify(profile));
+    localStorage.setItem(
+      "candidateProfile",
+      JSON.stringify(profile)
+    );
 
-      setLoading(false);
-      navigate("/interview");
-    }, 1500);
-  };
+    setLoading(false);
+
+    // ✅ Navigate to React interview page (NOT VR directly)
+    navigate("/interview");
+  }, 1500);
+};
+
 
   const domains = [
     { value: "Frontend", icon: "💻" },
