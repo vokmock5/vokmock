@@ -1,6 +1,7 @@
 import React, { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ArrowRight, Mic, Video, Brain } from 'lucide-react';
+import vrImage from '../assets/vrInterview.jpeg';
 
 const LandingPage = () => {
   // Load Google Fonts
@@ -10,7 +11,7 @@ const LandingPage = () => {
     link1.rel = 'stylesheet';
     document.head.appendChild(link1);
 
-    const link2 = document.createElement('link');
+    const link2 = document.createElement('link'); 
     link2.href = 'https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700&display=swap';
     link2.rel = 'stylesheet';
     document.head.appendChild(link2);
@@ -112,12 +113,13 @@ const LandingPage = () => {
               }}
             >
               <div className="relative rounded-2xl overflow-hidden shadow-2xl">
-                <img
-                  src="https://images.pexels.com/photos/7205310/pexels-photo-7205310.jpeg"
-                  alt="VR Interview Preview"
-                  className="w-full h-auto object-cover"
-                  style={{ aspectRatio: '4/3' }}
-                />
+               <img
+                    src={vrImage}
+                    alt="VR Interview Preview"
+                    className="w-full h-auto object-cover"
+                    style={{ aspectRatio: '4/3' }}
+              />
+
                 <div className="absolute inset-0 bg-gradient-to-t from-indigo-600/30 to-transparent" />
               </div>
               

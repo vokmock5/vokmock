@@ -1,9 +1,23 @@
-import OpenAI from "openai";
+// 
 
+
+
+
+
+
+//simi eng
+import OpenAI from "openai";
 const client = new OpenAI({
   apiKey: process.env.REACT_APP_OPENAI_API_KEY,
   dangerouslyAllowBrowser: true // acceptable for hackathon
 });
+
+// Interview session storage
+export const interviewSession = {
+  startTime: Date.now(),
+  qa: []
+};
+
 
 export async function getNextInterviewStep(input) {
   const systemPrompt = `
@@ -79,9 +93,32 @@ IMPORTANT:
 
   const content = response.choices[0].message.content;
 
+   const last = interviewSession.qa.length - 1;
+  if (last >= 0 && interviewSession.qa[last].answer == null) {
+    interviewSession.qa[last].answer = "Answered verbally during interview";
+  }
+  // try {
+  //   return JSON.parse(content);
+  // }
   try {
-    return JSON.parse(content);
-  } catch (err) {
+  const parsed = JSON.parse(content);
+
+  // save previous answer
+  if (interviewSession.qa.length > 0 && input.currentAnswer) {
+    interviewSession.qa[interviewSession.qa.length - 1].answer =
+      input.currentAnswer;
+  }
+
+  // save current question
+  interviewSession.qa.push({
+    question: parsed.question,
+    answer: null
+  });
+
+  return parsed;
+}
+ 
+  catch (err) {
     console.error("AI JSON parse error:", err, content);
 
     // 🔥 fallback so demo NEVER breaks
@@ -96,6 +133,53 @@ IMPORTANT:
       difficulty: "easy",
       tone: "neutral",
       isInterviewComplete: false
+    };
+  }
+}
+
+export async function generateInterviewFeedback() {
+  const prompt = `
+You are a professional human interviewer conducting a MOCK INTERVIEW.
+
+Here is the interview transcript:
+${interviewSession.qa
+  .map(
+    (q, i) =>
+      `Q${i + 1}: ${q.question}\nAnswer: ${q.answer || "No answer"}`
+  )
+  .join("\n\n")}
+
+Return JSON only:
+{
+  "overallPerformance": "excellent | good | average | poor",
+  "confidenceLevel": "low | medium | high",
+  "strengths": ["point 1", "point 2"],
+  "weaknesses": ["point 1", "point 2"],
+  "improvementTips": ["tip 1", "tip 2"]
+}
+`;
+
+  const response = await client.chat.completions.create({
+    model: "gpt-4.1-mini",
+    messages: [{ role: "user", content: prompt }]
+  });
+
+  const raw = response.choices[0].message.content;
+
+  const cleaned = raw
+    .replace(/```json/g, "")
+    .replace(/```/g, "")
+    .trim();
+
+  try {
+    return JSON.parse(cleaned);
+  } catch {
+    return {
+      overallPerformance: "average",
+      confidenceLevel: "medium",
+      strengths: ["Answered questions clearly"],
+      weaknesses: ["Needs more structured answers"],
+      improvementTips: ["Practice explaining step by step"]
     };
   }
 }
