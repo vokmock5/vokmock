@@ -19,7 +19,7 @@ router.post("/signup", async (req, res) => {
 
     const hashedPassword = await bcrypt.hash(password, 10);
 
-    const user = await User.create({
+    await User.create({
       name,
       email,
       password: hashedPassword
@@ -30,6 +30,7 @@ router.post("/signup", async (req, res) => {
       message: "Signup successful"
     });
   } catch (err) {
+    console.error("SIGNUP ERROR:", err);
     res.status(500).json({ error: "Signup failed" });
   }
 });
@@ -51,8 +52,9 @@ router.post("/login", async (req, res) => {
       return res.status(400).json({ message: "Invalid credentials" });
     }
 
+    // 🔥 FINAL JWT FIX
     const token = jwt.sign(
-      { id: user._id },
+      { _id: user._id }, // 🔥 ONLY _id
       process.env.JWT_SECRET,
       { expiresIn: "1d" }
     );
@@ -61,12 +63,13 @@ router.post("/login", async (req, res) => {
       success: true,
       token,
       user: {
-        id: user._id,
+        _id: user._id,
         name: user.name,
         email: user.email
       }
     });
   } catch (err) {
+    console.error("LOGIN ERROR:", err);
     res.status(500).json({ error: "Login failed" });
   }
 });
