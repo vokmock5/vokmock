@@ -4,6 +4,11 @@ const client = new OpenAI({
   apiKey: process.env.REACT_APP_OPENAI_API_KEY,
   dangerouslyAllowBrowser: true // acceptable for hackathon
 });
+// Interview session storage (STEP 1)
+export const interviewSession = {
+  startTime: Date.now(),
+  qa: []
+};
 
 export async function getNextInterviewStep(input) {
   const systemPrompt = `
@@ -63,7 +68,20 @@ Based on the candidate's answer, decide the next interview question.
   const content = response.choices[0].message.content;
 
   try {
-    return JSON.parse(content);
+    const parsed = JSON.parse(content);
+  // save previous answer
+if (interviewSession.qa.length > 0 && input.currentAnswer) {
+  interviewSession.qa[interviewSession.qa.length - 1].answer = input.currentAnswer;
+}
+
+// save the question
+interviewSession.qa.push({
+  question: parsed.question,
+  answer: null
+});
+
+return parsed;
+
   } catch (err) {
     console.error("AI JSON parse error:", err, content);
 
@@ -81,3 +99,71 @@ Based on the candidate's answer, decide the next interview question.
     };
   }
 }
+export async function generateInterviewFeedback() {
+  const prompt = `
+You are a professional human interviewer conducting a MOCK INTERVIEW
+for a student or early-career candidate.
+
+Important mindset rules:
+- This is a PRACTICE interview, not a real rejection-based interview
+- Be realistic, supportive, and encouraging
+- Do NOT be overly harsh or academic
+- If answers show basic understanding, mark performance as "average" or "good"
+- Only mark "poor" if answers are completely irrelevant or missing
+- Confidence should be "medium" by default unless the candidate is clearly very unsure
+- Focus on effort, clarity, and communication, not perfection
+- Use language similar to a real human interviewer giving feedback
+
+Here is the interview transcript:
+${interviewSession.qa
+  .map(
+    (q, i) =>
+      `Q${i + 1}: ${q.question}\nAnswer: ${q.answer || "No answer"}`
+  )
+  .join("\n\n")}
+
+Give structured feedback in JSON only:
+
+{
+  "overallPerformance": "excellent | good | average | poor",
+  "confidenceLevel": "low | medium | high",
+  "strengths": ["point 1", "point 2"],
+  "weaknesses": ["point 1", "point 2"],
+  "improvementTips": ["tip 1", "tip 2"]
+}
+
+`;
+
+  const response = await client.chat.completions.create({
+    model: "gpt-4.1-mini",
+    messages: [{ role: "user", content: prompt }]
+  });
+
+  const raw = response.choices[0].message.content;
+
+// remove ```json and ``` if AI adds them
+const cleaned = raw
+  .replace(/```json/g, "")
+  .replace(/```/g, "")
+  .trim();
+
+try {
+  return JSON.parse(cleaned);
+} catch (error) {
+  console.error("Invalid JSON from AI:", raw);
+
+  // fallback so app never crashes
+  return {
+    overallPerformance: "average",
+    confidenceLevel: "medium",
+    strengths: ["Answered questions clearly"],
+    weaknesses: ["Needs more structured answers"],
+    improvementTips: [
+      "Practice explaining concepts step by step",
+      "Work on confidence while speaking"
+    ]
+  };
+}
+
+}
+
