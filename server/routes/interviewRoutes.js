@@ -59,16 +59,23 @@ import authMiddleware from "../middleware/auth.js";
 
 const router = express.Router();
 
+
 /* SAVE INTERVIEW */
 router.post("/", authMiddleware, async (req, res) => {
   try {
     const { interviewTitle, qa, feedback } = req.body;
 
+    const summary =
+  (feedback?.strengths?.[0]) ||
+  (feedback?.areasToImprove?.[0]) ||
+  (feedback?.improvementTips?.[0]) ||
+  "No summary available";
     const interview = new Interview({
-      userId: req.user.id, // ✅ OLD STYLE (WORKING)
+      userId: req.user._id, // ✅ OLD STYLE (WORKING)
       interviewTitle,
       qa,
-      feedback
+      feedback,
+      summary,
     });
 
     await interview.save();
@@ -83,7 +90,7 @@ router.post("/", authMiddleware, async (req, res) => {
 router.get("/", authMiddleware, async (req, res) => {
   try {
     const interviews = await Interview.find({
-      userId: req.user.id // ✅ OLD STYLE (WORKING)
+      userId: req.user._id // ✅ OLD STYLE (WORKING)
     }).sort({ createdAt: -1 });
 
     res.status(200).json({ interviews });

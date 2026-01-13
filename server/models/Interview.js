@@ -13,6 +13,7 @@ const interviewSchema = new mongoose.Schema(
       default: "Mock Interview"
     },
 
+  
     qa: [
       {
         question: String,
@@ -28,7 +29,9 @@ const interviewSchema = new mongoose.Schema(
       overallPerformance: String,
       confidenceLevel: String,
       score: Number
-    }
+    },
+       summary: { type: String, default: "" },
+
   },
   { timestamps: true } // createdAt, updatedAt
 );
