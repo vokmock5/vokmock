@@ -243,12 +243,12 @@ class RoomBuilder {
     }
 
      createLaptop() {
-        // Laptop base (on interviewer's side)
+        // Laptop base (on interviewer's side, shifted to the left)
         const laptopBase = new THREE.Mesh(
             new THREE.BoxGeometry(0.4, 0.02, 0.3),
             new THREE.MeshStandardMaterial({ color: 0x333333 })
         );
-        laptopBase.position.set(0, 0.81, -0.4);
+        laptopBase.position.set(-1.0, 0.81, -0.4);
         laptopBase.castShadow = true;
         this.scene.add(laptopBase);
 
@@ -257,7 +257,7 @@ class RoomBuilder {
             new THREE.BoxGeometry(0.4, 0.3, 0.02),
             new THREE.MeshStandardMaterial({ color: 0x1a1a1a })
         );
-        laptopScreen.position.set(0, 0.96, -0.25);
+        laptopScreen.position.set(-1.0, 0.96, -0.25);
         laptopScreen.rotation.x = 0.3;
         laptopScreen.castShadow = true;
         this.scene.add(laptopScreen);
